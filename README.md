@@ -1,6 +1,6 @@
 ML 小練習
 
-Perceptron 
+First practice: perceptron 
 
 (1) loss
 ----------
