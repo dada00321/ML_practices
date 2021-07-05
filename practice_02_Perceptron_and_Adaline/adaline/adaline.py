@@ -122,10 +122,12 @@ class Adaline:
 
 	def net_input(self, W, X):
 		Z = np.dot(X, W)
+		'''
 		print(f"dim(X): {X.shape[0]} x {X.shape[1]}")
 		print(f"dim(W): {W.shape} = 1 x {W.shape[0]}")
 		print(f"dim(X•W): = dim(W) x dim(X.T) = (1 x {W.shape[0]}) x ({X.shape[1]} x {X.shape[0]})\n"+\
 			  f"\t\t  = dim(Z) = {Z.shape} = 1 x {Z.shape[0]}")
+		'''
 		return Z
 
 	def predict(self, linear_activation_output):
@@ -189,11 +191,15 @@ class Adaline:
 				cost = (errors**2).sum() / 2
 				# Define: cost = 1/2 SSE
 				self.costs.append(cost)
+				'''
+				print(self.Y.shape)
+				print(Z.shape)
 				print(f"dim(Y): {self.Y.shape} = 1 x {Y.shape[0]}")
 				print(f"dim(Z): {Z.shape} = 1 x {Y.shape[0]}")
 				print(f"dim(Y-Z): {errors.shape} = 1 x {errors.shape[0]}")
 				print(f"dim(ΔW): {W_increment.shape} = 1 x {W_increment.shape[0]}")
-			print("\n\n")
+				'''
+			#print("\n\n")
 			return self.X
 
 		else:

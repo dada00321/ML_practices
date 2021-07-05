@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from adaline import Adaline
+from module.plotting import plot_classification, plot_loss
 
 def load_data():
     iris_data_download_link = "".join(["https://archive.ics.uci.edu/ml/",
@@ -24,12 +25,23 @@ def load_data():
     X = df.iloc[0:100, [0, 2]].values
     return X, Y
 
-#def plot_data(plot_num, Y_label, X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
-def plot_data(X, Y, number, save_path, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
+def standardize_features(X):
+	X_standardized = np.copy(X)
+	standardize = lambda x: (x- np.mean(x)) / np.std(x)
+	X_standardized[:,0] = standardize(X_standardized[:,0])
+	X_standardized[:,1] = standardize(X_standardized[:,1])
+	return X_standardized
+
+def train(classifier, X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
+	#print(X.shape)
+	classifier.fit(X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
+
+#def exec__plot_loss(plot_num, Y_label, X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
+def exec__plot_loss(X, Y, number, save_path, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
 	fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(8, 4))
 	adaline = Adaline()
+	train(adaline, X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
 
-	adaline.fit(X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
 	costs = adaline.costs
 	#print(f"len(costs): {len(costs)}")
 	#print(costs)
@@ -73,12 +85,24 @@ def get_LR_points(H, L, n_sections, i):
 			     for _ in range(n_sections)]
 	print(LR_points)
 
-if __name__ == "__main__":
+def exec__plot_classification(X_standardized, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
+	adaline = Adaline()
+	train(adaline, X_standardized, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
+	plot_loss(adaline)
+	plot_classification(X = X_standardized,
+					    Y = Y,
+						classifier = adaline,
+						classifier_name = "Adaline",
+						weight_update_method = "Gradient Descent",
+						x_label="sepal length [standardized] (cm)",
+						y_label="petal length [standardized] (cm)")
 
+if __name__ == "__main__":
 	EPOCHS = 20
 	RANDOM_SEED = 1
 	THRESHOLD = 0
 	X, Y = load_data()
+	X_standardized = standardize_features(X)
 
 	'''
 	get_LR_points(1e-1, 1e-5, 5, 1)
@@ -90,15 +114,20 @@ if __name__ == "__main__":
 	get_LR_points(500e-6, 503e-6, 10, 7)
 	'''
 
-
-	#LRs = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
+	'''LRs = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
 	#LRs = [round(i*1e-4,4) for i in range(9, 0, -2)]
 	#LRs = [0.0007, 0.00065, 0.0006, 0.00055, 0.0005]
 	#LRs = [0.0005, 0.00051, 0.00053, 0.00054, 0.00055]
 	#LRs = [0.0005, 0.000503, 0.000505, 0.000508, 0.00051]
-	LRs = [0.0005, 0.0005003, 0.0005007, 0.000501, 0.0005013,
-		   0.0005017, 0.000502, 0.0005023, 0.0005027, 0.000503]
+	#LRs = [0.0005, 0.0005003, 0.0005007, 0.000501, 0.0005013, 0.0005017, 0.000502, 0.0005023, 0.0005027, 0.000503]
 
 	for number, LR in enumerate(LRs):
-		save_path = f"res/6/Adaline___No.{number+1}___LR={LR}___EPOCHS={EPOCHS}.png"
-		plot_data(X, Y, number, save_path, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
+		save_path = "res/adaline_loss/1/"+\
+			         f"with standardize/Adaline___No.{number+1}___LR={LR}___EPOCHS={EPOCHS}.png"
+		exec__plot_loss(X_standardized, Y, number, save_path, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
+
+	'''
+	LR = 1e-2
+	save_path = "res/adaline_classification/"+\
+		         f"adaline_classification___LR={LR}___EPOCHS={EPOCHS}.png"
+	exec__plot_classification(X_standardized, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)

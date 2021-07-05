@@ -1,6 +1,6 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 from perceptron import Perceptron
 from matplotlib.colors import ListedColormap
 
@@ -30,7 +30,6 @@ def plot_data(X, Y):
                 color="red", marker="o", label="setosa")
     plt.scatter(X[50:100, 0], X[50:100, 1],
                 color="blue", marker="x", label="versicolor")
-
     plt.xlabel("petal length [cm]")
     plt.ylabel("sepal length [cm]")
     plt.legend(loc="upper left")
@@ -40,7 +39,6 @@ def plot_data(X, Y):
     plt.show()
 
 def train(perceptron, X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
-
     print(X.shape)
 
     X = perceptron.fit(X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
@@ -72,15 +70,17 @@ def plot_decision_regions(W, X, Y, classifier, resolution=0.02):
     plt.contourf(xx1, xx2, Z, alpha=0.4, cmap=cmap)
     plt.xlim(xx1.min(), xx1.max())
     plt.ylim(xx2.min(), xx2.max())
-    plot_data()
+    plot_data(X, Y)
+    print(X.shape)
+    print(Y.shape)
 
 if __name__ == "__main__":
     X, Y = load_data()
-    plot_data(X, Y)
     perceptron = Perceptron()
+    plot_data(X, Y)
     LR = 1e-2
     EPOCHS = 10
     RANDOM_SEED = 1
     THRESHOLD = 0
     train(perceptron, X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
-    plot_decision_regions(perceptron.W[1:], X, Y, classifier=perceptron)
+    #plot_decision_regions(perceptron.W[1:], X, Y, classifier=perceptron)
