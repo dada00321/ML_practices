@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from adaline import Adaline
-from module.plotting import plot_classification, plot_loss
+from module.plotting import Plotting
+import os
+import time
 
 def load_data():
     iris_data_download_link = "".join(["https://archive.ics.uci.edu/ml/",
@@ -32,49 +33,13 @@ def standardize_features(X):
 	X_standardized[:,1] = standardize(X_standardized[:,1])
 	return X_standardized
 
-def train(classifier, X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
-	#print(X.shape)
-	classifier.fit(X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
-
-#def exec__plot_loss(plot_num, Y_label, X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
-def exec__plot_loss(X, Y, number, save_path, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
-	fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(8, 4))
+def train(X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
 	adaline = Adaline()
-	train(adaline, X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
+	X_standardized = standardize_features(X)
+	adaline.fit(X_standardized, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
+	return adaline
 
-	costs = adaline.costs
-	#print(f"len(costs): {len(costs)}")
-	#print(costs)
-	ax[0].plot(range(1, len(costs)+1), np.log10(costs), marker="o")
-	ax[0].set_xlabel("Epochs")
-	ax[0].set_ylabel("log(SSE)")
-	ax[0].set_title(f"Adaline - Learning rate: {LR}")
-
-	adaline.fit(X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
-	costs = adaline.costs
-	#print(f"len(costs): {len(costs)}")
-
-	ax[1].plot(range(1, len(costs)+1), costs, marker="o")
-	ax[1].set_xlabel("Epochs")
-	ax[1].set_ylabel("SSE")
-	ax[1].set_title(f"Adaline - Learning rate: {LR}")
-	plt.tight_layout()
-	plt.savefig(save_path, dpi=300)
-	plt.show()
-
-	'''LR = 1e-3
-	adaline.fit(X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
-	costs = adaline.costs
-	print(f"len(costs): {len(costs)}")
-	ax[1].plot(range(1, len(costs)+1), costs, marker="o")
-	ax[1].set_xlabel("Epochs")
-	ax[1].set_ylabel("SSE")
-	ax[1].set_title(f"Adaline - Learning rate: {LR}")
-	plt.tight_layout()
-	# plt.savefig("./adaline_1.png", dpi=300)
-	plt.show()'''
-
-def get_LR_points(H, L, n_sections, i):
+def __get_LR_points(H, L, n_sections, i):
 	increment = (H - L) / (n_sections - 1)
 	'''
 	LR_points = [round(H - increment * i, 1+len(str(H)[str(H).index('.')+1:]))
@@ -85,49 +50,77 @@ def get_LR_points(H, L, n_sections, i):
 			     for _ in range(n_sections)]
 	print(LR_points)
 
-def exec__plot_classification(X_standardized, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
-	adaline = Adaline()
-	train(adaline, X_standardized, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
-	plot_loss(adaline)
-	plot_classification(X = X_standardized,
-					    Y = Y,
-						classifier = adaline,
-						classifier_name = "Adaline",
-						weight_update_method = "Gradient Descent",
-						x_label="sepal length [standardized] (cm)",
-						y_label="petal length [standardized] (cm)")
+def __create_dir_if_not_exists(path):
+	if not os.path.exists(path):
+		os.mkdir(path)
 
 if __name__ == "__main__":
+	# =============================================================================
+	# 1. Training a Adaline classification model
+	# =============================================================================
 	EPOCHS = 20
 	RANDOM_SEED = 1
 	THRESHOLD = 0
 	X, Y = load_data()
-	X_standardized = standardize_features(X)
 
 	'''
-	get_LR_points(1e-1, 1e-5, 5, 1)
-	get_LR_points(9e-4, 1e-4, 5, 4)
-	get_LR_points(7e-4, 5e-4, 5, 4)
-	get_LR_points(50e-5, 55e-5, 5, 5)
-	get_LR_points(50e-5, 51e-5, 5, 6)
-	get_LR_points(500e-6, 503e-6, 5, 7)
-	get_LR_points(500e-6, 503e-6, 10, 7)
+	__get_LR_points(1e-1, 1e-5, 5, 1)
+	__get_LR_points(9e-4, 1e-4, 5, 4)
+	__get_LR_points(7e-4, 5e-4, 5, 4)
+	__get_LR_points(50e-5, 55e-5, 5, 5)
+	__get_LR_points(50e-5, 51e-5, 5, 6)
+	__get_LR_points(500e-6, 503e-6, 5, 7)
 	'''
 
-	'''LRs = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
-	#LRs = [round(i*1e-4,4) for i in range(9, 0, -2)]
-	#LRs = [0.0007, 0.00065, 0.0006, 0.00055, 0.0005]
-	#LRs = [0.0005, 0.00051, 0.00053, 0.00054, 0.00055]
-	#LRs = [0.0005, 0.000503, 0.000505, 0.000508, 0.00051]
-	#LRs = [0.0005, 0.0005003, 0.0005007, 0.000501, 0.0005013, 0.0005017, 0.000502, 0.0005023, 0.0005027, 0.000503]
+	# =============================================================================
+	# 2. Plotting the classification result
+	# =============================================================================
+	classifier_name = "Adaline"
+	weight_update_method = "Gradient Descent"
+	x_label = "sepallength (cm)"
+	y_label = "petallength (cm)"
+	scatter_name_1 = "setosa"
+	scatter_name_2 = "versicolor"
 
-	for number, LR in enumerate(LRs):
-		save_path = "res/adaline_loss/1/"+\
-			         f"with standardize/Adaline___No.{number+1}___LR={LR}___EPOCHS={EPOCHS}.png"
-		exec__plot_loss(X_standardized, Y, number, save_path, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
+	#----------------
+	# 2-1 Plot loss / cost of classification model
+	#----------------
+	LRs_dict = dict()
+	LRs_dict['1'] = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
+	LRs_dict['2'] = [round(i*1e-4,4) for i in range(9, 0, -2)]
+	LRs_dict['3'] = [0.0007, 0.00065, 0.0006, 0.00055, 0.0005]
+	LRs_dict['4'] = [0.0005, 0.00051, 0.00053, 0.00054, 0.00055]
+	LRs_dict['5'] = [0.0005, 0.000503, 0.000505, 0.000508, 0.00051]
+	LRs_dict['6'] = [0.0005, 0.0005003, 0.0005007, 0.000501, 0.0005013, 0.0005017, 0.000502, 0.0005023, 0.0005027, 0.000503]
 
-	'''
+	plot_types = {1: "SSE", 2: "SSE+log SSE"}
+	testing_plot_type = plot_types[2]
+	for test_group_number, LRs in LRs_dict.items():
+		print(f"Start to training & plotting group {test_group_number}...")
+		for sample_number, LR in enumerate(LRs):
+			print(f" {sample_number+1:2d}. The sample with LR = {LR} is runnuing!")
+
+			adaline = train(X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
+			plotting = Plotting(adaline, classifier_name, weight_update_method,
+							    x_label, y_label, scatter_name_1, scatter_name_2)
+
+			loss_plot_dir = f"./res/adaline_loss/{test_group_number}"
+			loss_plot_img_dir = loss_plot_dir + f"/with standardize___{testing_plot_type}"
+			loss_plot_path = loss_plot_img_dir + f"/Adaline___No.{sample_number+1}___LR={LR}___EPOCHS={EPOCHS}.png"
+			__create_dir_if_not_exists(loss_plot_dir)
+			__create_dir_if_not_exists(loss_plot_img_dir)
+			plotting.plot_costs(testing_plot_type, loss_plot_path)
+			print()
+		time.sleep(5)
+
+	#----------------
+	# 2-2 Decision regoins and data points
+	#----------------
 	LR = 1e-2
+	adaline = train(X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
+	plotting = Plotting(adaline, classifier_name, weight_update_method,
+					    x_label, y_label, scatter_name_1, scatter_name_2)
+
 	save_path = "res/adaline_classification/"+\
-		         f"adaline_classification___LR={LR}___EPOCHS={EPOCHS}.png"
-	exec__plot_classification(X_standardized, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
+		        f"adaline_classification___LR={LR}___EPOCHS={EPOCHS}.png"
+	plotting.plot_classification(X, Y, save_path=save_path)
