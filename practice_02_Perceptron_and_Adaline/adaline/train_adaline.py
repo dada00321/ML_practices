@@ -56,7 +56,7 @@ def __create_dir_if_not_exists(path):
 
 if __name__ == "__main__":
 	# =============================================================================
-	# 1. Setting the training hyperparameter
+	# 1. Setting the training hyperparameters
 	# =============================================================================
 	EPOCHS = 20
 	RANDOM_SEED = 1
