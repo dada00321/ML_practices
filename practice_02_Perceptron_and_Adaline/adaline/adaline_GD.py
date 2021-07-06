@@ -1,6 +1,6 @@
 import numpy as np
 
-class Perceptron:
+class Adaline_GD:
 	"""
 	Parameters
 	------------
@@ -41,6 +41,7 @@ class Perceptron:
 	def set_Y(self, Y):
 		if type(Y).__name__ == "ndarray":
 			self.Y = Y
+			#print(Y)
 			return True
 		else:
 			print("[WARNING] type of `Y` should be ndarray.")
@@ -100,7 +101,7 @@ class Perceptron:
 			      "integer or float.")
 			return False
 
-	def initialize_weights(self, X, RANDOM_SEED, threshold):
+	def __initialize_weights(self, X, RANDOM_SEED, threshold):
 		"""
 		This block must be late than block `set_X()` during execution.
 		"""
@@ -120,19 +121,17 @@ class Perceptron:
 		self.W = W
 
 	def net_input(self, W, X):
-		"""
-		dim. of W: 1+m
-		dim. of X: 1+m
-		rtn_val = w_1*x_1 + ... + w_m*x_m + b (b: bias, = threshold)
-		"""
-		return np.dot(W, X)
+		Z = np.dot(X, W)
+		'''
+		print(f"dim(X): {X.shape[0]} x {X.shape[1]}")
+		print(f"dim(W): {W.shape} = 1 x {W.shape[0]}")
+		print(f"dim(X•W): = dim(W) x dim(X.T) = (1 x {W.shape[0]}) x ({X.shape[1]} x {X.shape[0]})\n"+\
+			  f"\t\t  = dim(Z) = {Z.shape} = 1 x {Z.shape[0]}")
+		'''
+		return Z
 
-	def activation(self, z):
-		"""
-		"Predict" the exception outcome (y_i_hat)
-		Depends on `THRESHOLD`
-		"""
-		return np.where(z>=0, 1, -1)
+	def predict(self, linear_activation_output):
+		return np.where(linear_activation_output >= 0, 1, -1)
 
 	def fit(self,
 		    X, Y,
@@ -140,7 +139,6 @@ class Perceptron:
 			EPOCHS=50,
 			RANDOM_SEED=1,
 			THRESHOLD=0):
-		self.errors_in_epochs = list()
 		if all((self.check_parameters(LR, EPOCHS, RANDOM_SEED, THRESHOLD),
 		        self.set_X(X),
 				self.set_Y(Y),
@@ -148,38 +146,47 @@ class Perceptron:
 				self.set_EPOCHS(EPOCHS),
 				self.set_RANDOM_SEED(RANDOM_SEED),
 				self.set_THRESHOLD(THRESHOLD))):
-			print("[INFO] Input parameters are already received.")
+			#print("[INFO] Input parameters are already received.")
 
 			# Step 1: Initially, set weights to 0s or small random values
-			self.initialize_weights(self.X, self.RANDOM_SEED, self.THRESHOLD)
-
+			self.__initialize_weights(self.X, self.RANDOM_SEED, self.THRESHOLD)
+			self.costs = list()
 			for _ in range(self.EPOCHS): # number of training iterations
-				errors = 0
-				for x_i, y_i in zip(self.X, self.Y): # i th sample
-					# Step 2(a): Compute ŷ_i
-					z_i = self.net_input(self.W, x_i) # both self.W and x_i have (1+m) neurons, start from w_0 anf x_0 respectively
-					y_hat = self.activation(z_i) # binomial: +1 or -1
+				# Step 2: Update weights
+				Z = self.net_input(self.W, self.X) # both self.W and x_i have (1+m) neurons, start from w_0 anf x_0 respectively
 
-					# Step 2(b): Update weights
-					'''
-					for j in range(1, self.X.shape[1]):
-						# select 1~"m" from [0~m] | self.X.shape[1]: (1+m)
-						weight_j_increment = self.LR * (y_i - y_hat) * x_i[j]
-						self.W[j] += weight_j_increment
-					   ↓   ↓   ↓
-					'''
-					residual = y_i - y_hat
-					errors += int(residual != 0)
-
-					'''
-					self.W[1:] += self.LR * residual * x_i[1:]
-					self.W[0] += self.LR * residual
-					'''
-					self.W += self.LR * residual * x_i
-				self.errors_in_epochs.append(errors)
+				# m: # of input neurons
+				# X.T: transpose matrix of X
+				# LR: learning rate
+				#
+				# dim(W): 1 x (1+m) // W.shape: ((1+m),)
+				# dim(X): N x (1+m) // => X.shape: (N, (1+m))
+				# dim(Z): 1 x N // dim(X•W) = dim(W) x dim(X.T)
+				#
+				# dim(Y): 1 x N
+				# dim(Y-Z): 1 x N
+				# LR * dim(Y-Z): 1 x N
+				errors = self.Y - Z
+				#print("dim(errors):", errors.shape)
+				# self.W += self.LR * np.dot(errors, X)
+				W_increment = self.LR * np.dot(self.X.T, (self.Y - Z))
+				#print(tmp.shape)
+				self.W += W_increment
+				cost = (errors**2).sum() / 2
+				# Define: cost = 1/2 SSE
+				self.costs.append(cost)
+				'''
+				print(self.Y.shape)
+				print(Z.shape)
+				print(f"dim(Y): {self.Y.shape} = 1 x {Y.shape[0]}")
+				print(f"dim(Z): {Z.shape} = 1 x {Y.shape[0]}")
+				print(f"dim(Y-Z): {errors.shape} = 1 x {errors.shape[0]}")
+				print(f"dim(ΔW): {W_increment.shape} = 1 x {W_increment.shape[0]}")
+				'''
+			#print("\n\n")
 			return self.X
 
 		else:
-			print("[WARNING] `Perceptron` can not be initialized, some errors occur!")
+			print("[WARNING] `Adaline` can not be initialized, some errors occur!")
 			self.is_available = False
 			return None

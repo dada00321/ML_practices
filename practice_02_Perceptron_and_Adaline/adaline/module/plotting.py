@@ -121,15 +121,22 @@ class Plotting:
 				plt.title(self.title)
 				plt.xlabel("Epochs")
 				plt.ylabel("SSE")
+				#plt.ylabel("Avgerage Cost")
 
 			else: # (plot_type == "SSE + log SSE")
 				fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(8, 4))
-				ax[0].plot(range(1, self.classifier.EPOCHS+1), np.log10(costs), marker='o')
+				#for i in range(len(costs)):
+					#costs[i][costs[i]<1] = 1
+				log_costs = np.log10(costs)
+				ax[0].plot(range(1, self.classifier.EPOCHS+1), log_costs, marker='o')
 				ax[0].set_title(self.title)
 				ax[0].set_xlabel("Epochs")
 				ax[0].set_ylabel("log(SSE)")
+				#ax[0].set_ylabel("log(Avgerage Cost)")
+
 				ax[1].plot(range(1, self.classifier.EPOCHS+1), costs, marker='o')
 				ax[1].set_title(self.title)
 				ax[1].set_xlabel("Epochs")
 				ax[1].set_ylabel("SSE")
+				#ax[1].set_ylabel("Avgerage Cost")
 			self.__save_polt_and_show(plt, save_path)

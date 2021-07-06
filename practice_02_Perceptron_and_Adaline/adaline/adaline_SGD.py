@@ -1,6 +1,6 @@
 import numpy as np
 
-class Perceptron:
+class Adaline_SGD:
 	"""
 	Parameters
 	------------
@@ -10,6 +10,7 @@ class Perceptron:
 	  Real labels (classes)
     W: ndarray (numpy.ndarray) / 1d-array
 	  Weights
+    N:
 	LR: float
 	  learning rate (η, between 0.0 and 1.0)
 	EPOCHS: int
@@ -27,10 +28,11 @@ class Perceptron:
 	  difference between real label (class) and predicted label (class)
 
 	"""
-	def set_X(self, X):
+	def set_X(self, X, is_first_time=True):
 		if type(X).__name__ == "ndarray":
-			# For each sample, set the first input neuron x_0 to "1".
-			X = np.insert(X, 0, 1, axis=1)
+			if is_first_time:
+				# For each sample, set the first input neuron x_0 to "1".
+				X = np.insert(X, 0, 1, axis=1)
 			# After insertion, X have (1+m) input neurons.
 			self.X = X
 			return True
@@ -41,10 +43,19 @@ class Perceptron:
 	def set_Y(self, Y):
 		if type(Y).__name__ == "ndarray":
 			self.Y = Y
+			#print(Y)
 			return True
 		else:
 			print("[WARNING] type of `Y` should be ndarray.")
 			return False
+
+	def shuffle_data(self, X, Y):
+		random_val = self.random_generator.permutation(len(Y))
+		return X[random_val], Y[random_val]
+
+	def reset_X_and_Y(self, X, Y):
+		self.set_X(X, False)
+		self.set_Y(Y)
 
 	def check_parameters(self, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
 		if all([str(e).isdigit() for e in (LR, EPOCHS, RANDOM_SEED, THRESHOLD)]):
@@ -100,7 +111,7 @@ class Perceptron:
 			      "integer or float.")
 			return False
 
-	def initialize_weights(self, X, RANDOM_SEED, threshold):
+	def __initialize_weights(self, X, RANDOM_SEED, threshold):
 		"""
 		This block must be late than block `set_X()` during execution.
 		"""
@@ -110,6 +121,7 @@ class Perceptron:
 		random_generator = np.random.RandomState(RANDOM_SEED)
 		W = random_generator.normal(loc=0.0, scale=0.01,
 							        size=num_input_neurons)
+		self.random_generator = random_generator
 		# type 2: set W to "0"s
 		'''
 		W = np.zeros(num_input_neurons)
@@ -119,20 +131,19 @@ class Perceptron:
 		W[0] = threshold*(-1)
 		self.W = W
 
-	def net_input(self, W, X):
-		"""
-		dim. of W: 1+m
-		dim. of X: 1+m
-		rtn_val = w_1*x_1 + ... + w_m*x_m + b (b: bias, = threshold)
-		"""
-		return np.dot(W, X)
+	def net_input(self, W, x_i):
+		Z = np.dot(x_i, W)
+		# dim(Z) = dim(W) x dim(X.T) = (1x(m+1)) x ((m+1)x1) = 1x1
+		'''
+		print(f"dim(X): {X.shape[0]} x {X.shape[1]}")
+		print(f"dim(W): {W.shape} = 1 x {W.shape[0]}")
+		print(f"dim(X•W): = dim(W) x dim(X.T) = (1 x {W.shape[0]}) x ({X.shape[1]} x {X.shape[0]})\n"+\
+			  f"\t\t  = dim(Z) = {Z.shape} = 1 x {Z.shape[0]}")
+		'''
+		return Z
 
-	def activation(self, z):
-		"""
-		"Predict" the exception outcome (y_i_hat)
-		Depends on `THRESHOLD`
-		"""
-		return np.where(z>=0, 1, -1)
+	def predict(self, linear_activation_output):
+		return np.where(linear_activation_output >= 0, 1, -1)
 
 	def fit(self,
 		    X, Y,
@@ -140,7 +151,6 @@ class Perceptron:
 			EPOCHS=50,
 			RANDOM_SEED=1,
 			THRESHOLD=0):
-		self.errors_in_epochs = list()
 		if all((self.check_parameters(LR, EPOCHS, RANDOM_SEED, THRESHOLD),
 		        self.set_X(X),
 				self.set_Y(Y),
@@ -148,38 +158,24 @@ class Perceptron:
 				self.set_EPOCHS(EPOCHS),
 				self.set_RANDOM_SEED(RANDOM_SEED),
 				self.set_THRESHOLD(THRESHOLD))):
-			print("[INFO] Input parameters are already received.")
+			#print("[INFO] Input parameters are already received.")
 
 			# Step 1: Initially, set weights to 0s or small random values
-			self.initialize_weights(self.X, self.RANDOM_SEED, self.THRESHOLD)
-
+			self.__initialize_weights(self.X, self.RANDOM_SEED, self.THRESHOLD)
+			self.costs = list()
 			for _ in range(self.EPOCHS): # number of training iterations
-				errors = 0
+				tmpX, tmpY = self.shuffle_data(self.X, self.Y)
+				self.reset_X_and_Y(tmpX, tmpY)
+				sum_of_weight_increments = 0
 				for x_i, y_i in zip(self.X, self.Y): # i th sample
-					# Step 2(a): Compute ŷ_i
-					z_i = self.net_input(self.W, x_i) # both self.W and x_i have (1+m) neurons, start from w_0 anf x_0 respectively
-					y_hat = self.activation(z_i) # binomial: +1 or -1
-
-					# Step 2(b): Update weights
-					'''
-					for j in range(1, self.X.shape[1]):
-						# select 1~"m" from [0~m] | self.X.shape[1]: (1+m)
-						weight_j_increment = self.LR * (y_i - y_hat) * x_i[j]
-						self.W[j] += weight_j_increment
-					   ↓   ↓   ↓
-					'''
-					residual = y_i - y_hat
-					errors += int(residual != 0)
-
-					'''
-					self.W[1:] += self.LR * residual * x_i[1:]
-					self.W[0] += self.LR * residual
-					'''
-					self.W += self.LR * residual * x_i
-				self.errors_in_epochs.append(errors)
+					z_i = self.net_input(self.W, x_i) # dim(Z) = 1x1
+					error = y_i - z_i
+					w_i_increment = self.LR * x_i.dot(error)  # dim(err) = 1x1, dim(x_i) = 1x(m+1)
+					self.W += w_i_increment # dim(W) = dim(w_i_increment) = 1 x (m+1)
+					sum_of_weight_increments += (error/2)**2
+				self.costs.append(sum_of_weight_increments / Y.shape[0])
 			return self.X
-
 		else:
-			print("[WARNING] `Perceptron` can not be initialized, some errors occur!")
+			print("[WARNING] `Adaline` can not be initialized, some errors occur!")
 			self.is_available = False
 			return None

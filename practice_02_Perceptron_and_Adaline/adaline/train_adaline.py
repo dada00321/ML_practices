@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
-from adaline import Adaline
+from adaline_GD import Adaline_GD
+from adaline_SGD import Adaline_SGD
 from module.plotting import Plotting
 import os
-import time
+#import time
 
 def load_data():
     iris_data_download_link = "".join(["https://archive.ics.uci.edu/ml/",
@@ -33,11 +34,19 @@ def standardize_features(X):
 	X_standardized[:,1] = standardize(X_standardized[:,1])
 	return X_standardized
 
-def train(X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
-	adaline = Adaline()
-	X_standardized = standardize_features(X)
-	adaline.fit(X_standardized, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
-	return adaline
+def train(X, Y, mode, LR, EPOCHS, RANDOM_SEED, THRESHOLD):
+	supported_mode = ("GD", "SGD")
+	if mode in supported_mode:
+		if mode == "GD":
+			adaline = Adaline_GD()
+		elif mode == "SGD":
+			adaline = Adaline_SGD()
+		X_standardized = standardize_features(X)
+		adaline.fit(X_standardized, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
+		return adaline
+	else:
+		print("[WARNING] The parameter `mode` is invalid in train()")
+		return None
 
 def __get_LR_points(H, L, n_sections, i):
 	increment = (H - L) / (n_sections - 1)
@@ -63,6 +72,9 @@ if __name__ == "__main__":
 	THRESHOLD = 0
 	X, Y = load_data()
 
+	#mode = "GD"
+	mode = "SGD"
+
 	'''
 	__get_LR_points(1e-1, 1e-5, 5, 1)
 	__get_LR_points(9e-4, 1e-4, 5, 4)
@@ -76,7 +88,10 @@ if __name__ == "__main__":
 	# 2. Training model and plotting the classification result
 	# =============================================================================
 	classifier_name = "Adaline"
-	weight_update_method = "Gradient Descent"
+	if mode == "GD":
+		weight_update_method = "Gradient Descent"
+	elif mode == "SGD":
+		weight_update_method = "Stochastic Gradient Descent"
 	x_label = "sepallength (cm)"
 	y_label = "petallength (cm)"
 	scatter_name_1 = "setosa"
@@ -95,32 +110,34 @@ if __name__ == "__main__":
 
 	plot_types = {1: "SSE", 2: "SSE+log SSE"}
 	testing_plot_type = plot_types[2]
+
 	for test_group_number, LRs in LRs_dict.items():
 		print(f"Start to training & plotting group {test_group_number}...")
 		for sample_number, LR in enumerate(LRs):
 			print(f" {sample_number+1:2d}. The sample with LR = {LR} is runnuing!")
-
-			adaline = train(X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
-			plotting = Plotting(adaline, classifier_name, weight_update_method,
-							    x_label, y_label, scatter_name_1, scatter_name_2)
-
-			loss_plot_dir = f"./res/adaline_loss/{test_group_number}"
-			loss_plot_img_dir = loss_plot_dir + f"/with standardize___{testing_plot_type}"
-			loss_plot_path = loss_plot_img_dir + f"/Adaline___No.{sample_number+1}___LR={LR}___EPOCHS={EPOCHS}.png"
-			__create_dir_if_not_exists(loss_plot_dir)
-			__create_dir_if_not_exists(loss_plot_img_dir)
-			plotting.plot_costs(testing_plot_type, loss_plot_path)
-			print()
-		time.sleep(5)
+			adaline = train(X, Y, mode, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
+			if adaline is not None:
+				plotting = Plotting(adaline, classifier_name, weight_update_method,
+								    x_label, y_label, scatter_name_1, scatter_name_2)
+				loss_plot_dir = f"./res/adaline_loss/{test_group_number}"
+				loss_plot_img_dir = loss_plot_dir + f"/with standardize___{testing_plot_type}"
+				loss_plot_path = loss_plot_img_dir + f"/AdalineGD___No.{sample_number+1}___mode={mode}___LR={LR}___EPOCHS={EPOCHS}.png"
+				__create_dir_if_not_exists(loss_plot_dir)
+				__create_dir_if_not_exists(loss_plot_img_dir)
+				plotting.plot_costs(testing_plot_type, loss_plot_path)
+				print()
+		#time.sleep(5)
 
 	#----------------
 	# 2-2 Train & plot decision regoins and data points
 	#----------------
+	'''
 	LR = 1e-2
-	adaline = train(X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
-	plotting = Plotting(adaline, classifier_name, weight_update_method,
-					    x_label, y_label, scatter_name_1, scatter_name_2)
-
-	save_path = "res/adaline_classification/"+\
-		        f"adaline_classification___LR={LR}___EPOCHS={EPOCHS}.png"
-	plotting.plot_classification(X, Y, save_path=save_path)
+	adaline = train(X, Y, mode, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
+	if adaline is not None:
+		plotting = Plotting(adaline, classifier_name, weight_update_method,
+						    x_label, y_label, scatter_name_1, scatter_name_2)
+		save_path = "res/adaline_classification/"+\
+			        f"adaline_classification___mode={mode}___LR={LR}___EPOCHS={EPOCHS}.png"
+		plotting.plot_classification(X, Y, save_path=save_path)
+	'''
