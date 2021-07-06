@@ -56,7 +56,7 @@ def __create_dir_if_not_exists(path):
 
 if __name__ == "__main__":
 	# =============================================================================
-	# 1. Training a Adaline classification model
+	# 1. Setting the training hyperparameter
 	# =============================================================================
 	EPOCHS = 20
 	RANDOM_SEED = 1
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 	'''
 
 	# =============================================================================
-	# 2. Plotting the classification result
+	# 2. Training model and plotting the classification result
 	# =============================================================================
 	classifier_name = "Adaline"
 	weight_update_method = "Gradient Descent"
@@ -83,7 +83,7 @@ if __name__ == "__main__":
 	scatter_name_2 = "versicolor"
 
 	#----------------
-	# 2-1 Plot loss / cost of classification model
+	# 2-1 Train & plot loss / cost of classification model
 	#----------------
 	LRs_dict = dict()
 	LRs_dict['1'] = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
@@ -114,7 +114,7 @@ if __name__ == "__main__":
 		time.sleep(5)
 
 	#----------------
-	# 2-2 Decision regoins and data points
+	# 2-2 Train & plot decision regoins and data points
 	#----------------
 	LR = 1e-2
 	adaline = train(X, Y, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
