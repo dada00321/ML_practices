@@ -83,7 +83,7 @@ if __name__ == "__main__":
 	scatter_name_2 = "versicolor"
 
 	#----------------
-	# 2-1 Train & plot loss / cost of classification model
+	# 2-1 Train & plot losses / costs of classification models
 	#----------------
 	LRs_dict = dict()
 	LRs_dict['1'] = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
