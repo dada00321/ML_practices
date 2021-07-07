@@ -1,6 +1,6 @@
 ML Little Practices
 
-First practice: perceptron, Adaline models
+models: perceptron, Adaline[Gradient Descent], Adaline[Stochastic Gradient Descent]
 
 (1) losses/costs
 ----------
