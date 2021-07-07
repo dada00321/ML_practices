@@ -4,7 +4,7 @@ models: perceptron, Adaline[Gradient Descent], Adaline[Stochastic Gradient Desce
 
 (1) losses/costs
 ----------
-perceptron
+**perceptron**
 ![](https://i.imgur.com/F16zCkC.png)
 
 **(A) LR = 1e-1, [Weights update: Gradient Descent]**
@@ -39,11 +39,11 @@ perceptron
 
 (2) classification
 ----------
-perceptron
+**perceptron**
 ![](https://i.imgur.com/l3sdhZr.png)
 
-Adaline [Weights update: Gradient Descent]
+**Adaline [Weights update: Gradient Descent]**
 ![](https://i.imgur.com/oRdEkBY.png)
 
-Adaline [Weights update: Stochastic Gradient Descent]
+**Adaline [Weights update: Stochastic Gradient Descent]**
 ![](https://i.imgur.com/W7eD6BD.png)
