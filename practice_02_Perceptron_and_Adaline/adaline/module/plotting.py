@@ -81,6 +81,7 @@ class Plotting:
 
 	def plot_classification(self,
 						    X, Y,
+							SAMPLE_SIZE,
 							save_path=''):
 		''' Note: The classifier `classifier` had to be trained! '''
 
@@ -90,9 +91,10 @@ class Plotting:
 		self.__plot_dicision_boundary_with_colors(colors, cmap, W, X, Y)
 
 		''' 2. Plot data points '''
-		plt.scatter(X[:50, 0], X[:50, 1],
+		break_point = int(SAMPLE_SIZE/2)
+		plt.scatter(X[:break_point, 0], X[:break_point, 1],
 		            color="red", marker="o", label=self.scatter_name_1)
-		plt.scatter(X[50:100, 0], X[50:100, 1],
+		plt.scatter(X[break_point:SAMPLE_SIZE, 0], X[break_point:SAMPLE_SIZE, 1],
 		            color="blue", marker="x", label=self.scatter_name_2)
 
 		''' 3. Set the classification map '''

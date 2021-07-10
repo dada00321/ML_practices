@@ -6,7 +6,7 @@ from module.plotting import Plotting
 import os
 #import time
 
-def load_data():
+def load_data(SAMPLE_SIZE):
     iris_data_download_link = "".join(["https://archive.ics.uci.edu/ml/",
                                        "machine-learning-databases",
                                        "/iris/iris.data"])
@@ -19,12 +19,12 @@ def load_data():
      - as 2 classes to practice classification
      - [sample size = 100]
     """
-    Y = df.iloc[0:100, 4].values
+    Y = df.iloc[0:SAMPLE_SIZE, 4].values
     Y = np.where(Y == "Iris-setosa", -1, 1)
 
     # Extract sepal(花萼長) length and petal(花瓣長) length
     # => as 2 input features/neurons
-    X = df.iloc[0:100, [0, 2]].values
+    X = df.iloc[0:SAMPLE_SIZE, [0, 2]].values
     return X, Y
 
 def standardize_features(X):
@@ -70,7 +70,8 @@ if __name__ == "__main__":
 	EPOCHS = 20
 	RANDOM_SEED = 1
 	THRESHOLD = 0
-	X, Y = load_data()
+	SAMPLE_SIZE = 100
+	X, Y = load_data(SAMPLE_SIZE)
 
 	#mode = "GD"
 	mode = "SGD"
@@ -92,14 +93,15 @@ if __name__ == "__main__":
 		weight_update_method = "Gradient Descent"
 	elif mode == "SGD":
 		weight_update_method = "Stochastic Gradient Descent"
-	x_label = "sepallength (cm)"
-	y_label = "petallength (cm)"
+	x_label = "sepal length (cm)"
+	y_label = "petal length (cm)"
 	scatter_name_1 = "setosa"
 	scatter_name_2 = "versicolor"
 
 	#----------------
 	# 2-1 Train & plot losses / costs of classification models
 	#----------------
+	'''
 	LRs_dict = dict()
 	LRs_dict['1'] = [1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
 	LRs_dict['2'] = [round(i*1e-4,4) for i in range(9, 0, -2)]
@@ -127,11 +129,10 @@ if __name__ == "__main__":
 				plotting.plot_costs(testing_plot_type, loss_plot_path)
 				print()
 		#time.sleep(5)
-
+	'''
 	#----------------
 	# 2-2 Train & plot decision regoins and data points
 	#----------------
-	'''
 	LR = 1e-2
 	adaline = train(X, Y, mode, LR, EPOCHS, RANDOM_SEED, THRESHOLD)
 	if adaline is not None:
@@ -139,5 +140,4 @@ if __name__ == "__main__":
 						    x_label, y_label, scatter_name_1, scatter_name_2)
 		save_path = "res/adaline_classification/"+\
 			        f"adaline_classification___mode={mode}___LR={LR}___EPOCHS={EPOCHS}.png"
-		plotting.plot_classification(X, Y, save_path=save_path)
-	'''
+		plotting.plot_classification(X, Y, SAMPLE_SIZE, save_path=save_path)
