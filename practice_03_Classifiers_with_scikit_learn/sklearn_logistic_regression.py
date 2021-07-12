@@ -98,7 +98,8 @@ if __name__ == "__main__":
 	X_combined = np.vstack((X_train, X_test))
 	Y_combined = np.hstack((Y_train, Y_test))
 	save_path = "res/sklearn_perceptron_classification/"+\
-				f"sklearn_perceptron_classification___C={C}.png"
+				f"sklearn_perceptron_classification___C={C}_"+\
+				f"__multi_class={MULTI_CLASS}.png"
 	test_idx = range(int(sample_size*(1-test_dataset_ratio)), sample_size)
 	plotting.plot_classification(X_combined, Y_combined,
 							     save_path, test_idx)
