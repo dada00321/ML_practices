@@ -9,7 +9,7 @@ from module.plotting import Plotting
 # =============================================================================
 # for training data
 # =============================================================================
-from sklearn.linear_model import Perceptron
+from sklearn.linear_model import LogisticRegression
 
 def show_sample_size_of_each_class(Y, title):
 	'''
@@ -59,36 +59,39 @@ if __name__ == "__main__":
 
 	X_train, X_test = normalize_input_features(X_train, X_test)
 
-	LR = 0.1
+	#LR = 0.1
 	RAMDOM_SEED = 1
+	C = 100.0
+	SOLVER = "lbfgs"
 	# 1. construct model
-	perceptron = Perceptron(eta0=LR, random_state=RAMDOM_SEED)
+	logistic_regression = LogisticRegression(C = C, random_state=RAMDOM_SEED,
+										     solver=SOLVER)
 	# 2. train
-	perceptron.fit(X_train, Y_train)
+	logistic_regression.fit(X_train, Y_train)
 
 	# 3. classify
-	y_pred = perceptron.predict(X_test)
+	y_pred = logistic_regression.predict(X_test)
 	num_of_correct, num_of_incorrect = np.bincount((y_pred != Y_test))
 	#print(num_of_correct, num_of_incorrect)
 	accuracy = round(num_of_correct*100 / (num_of_correct + num_of_incorrect), 3)
 	print(f"\naccuracy: {accuracy}%")
-	accuracy = round(perceptron.score(X_test, Y_test), 3)
+	accuracy = round(logistic_regression.score(X_test, Y_test), 3)
 	print(f"\naccuracy: {accuracy}")
 
 	# 4. plot classification result
-	classifier = perceptron
-	classifier_name = "Perceptron"
+	classifier = logistic_regression
+	classifier_name = "Logistic Regression"
 	x_label = "petal length (cm)"
 	y_label = "petal width (cm)"
 	scatter_name_dict = {0: "Setosa",
 					     1: "Versicolor",
 						 2: "Virginica"}
 	plotting = Plotting(classifier, classifier_name,
-					    x_label, y_label, scatter_name_dict, LR)
+					    x_label, y_label, scatter_name_dict)
 	X_combined = np.vstack((X_train, X_test))
 	Y_combined = np.hstack((Y_train, Y_test))
 	save_path = "res/sklearn_perceptron_classification/"+\
-				f"sklearn_perceptron_classification___LR={LR}.png"
+				f"sklearn_perceptron_classification___C={C}.png"
 	test_idx = range(int(sample_size*(1-test_dataset_ratio)), sample_size)
 	plotting.plot_classification(X_combined, Y_combined,
 							     save_path, test_idx)

@@ -7,8 +7,8 @@ warnings.filterwarnings("ignore")
 
 class Plotting:
 	def __init__(self, classifier, classifier_name,
-				 x_label, y_label, LR,
-				 scatter_name_dict=None):
+				 x_label, y_label,
+				 scatter_name_dict=None, LR=None):
 		empty_choices = ('', None)
 		self.set_classifier(classifier)
 
@@ -24,10 +24,12 @@ class Plotting:
 			y_label = "(classification - y label)"
 		self.y_label = y_label
 
-		self.LR = LR
 		self.scatter_name_dict = scatter_name_dict
+		if LR is not None:
+			self.LR = LR
 
-		title = f"{classifier_name}\n"+\
+		title = f"{classifier_name}\n"
+		if LR is not None:
 				f"Learning rate: {self.LR}"
 		self.title = title
 
