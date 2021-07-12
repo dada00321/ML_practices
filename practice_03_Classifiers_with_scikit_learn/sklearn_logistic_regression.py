@@ -103,3 +103,11 @@ if __name__ == "__main__":
 	test_idx = range(int(sample_size*(1-test_dataset_ratio)), sample_size)
 	plotting.plot_classification(X_combined, Y_combined,
 							     save_path, test_idx)
+
+	print(X_test[:3, :])
+	print('\n', logistic_regression.predict_proba(X_test[:3, :]), sep='')
+	print('\n', logistic_regression.predict_proba(X_test[:3, :]).argmax(axis=1), sep='')
+	print('\n', logistic_regression.predict(X_test[:3, :]), sep='')
+	print('\n', X_test[0, :], sep='')
+	print('\n', X_test[0, :].reshape(1, -1), sep='')
+	#print('\n', logistic_regression.predict(X_test[:3, :]), sep='')
