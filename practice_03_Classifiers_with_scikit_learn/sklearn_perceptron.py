@@ -83,8 +83,12 @@ if __name__ == "__main__":
 	scatter_name_dict = {0: "Setosa",
 					     1: "Versicolor",
 						 2: "Virginica"}
-	plotting = Plotting(classifier, classifier_name,
-					    x_label, y_label, scatter_name_dict, LR)
+	plotting = Plotting(classifier,
+					    classifier_name,
+					    x_label,
+						y_label,
+						scatter_name_dict,
+						lr=LR)
 	X_combined = np.vstack((X_train, X_test))
 	Y_combined = np.hstack((Y_train, Y_test))
 	save_path = "res/sklearn_perceptron_classification/"+\

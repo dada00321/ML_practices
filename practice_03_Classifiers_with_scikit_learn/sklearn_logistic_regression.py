@@ -63,9 +63,12 @@ if __name__ == "__main__":
 	RAMDOM_SEED = 1
 	C = 100.0
 	SOLVER = "lbfgs"
+	MULTI_CLASS  = "ovr"
+	#MULTI_CLASS  = "multinomial"
 	# 1. construct model
 	logistic_regression = LogisticRegression(C = C, random_state=RAMDOM_SEED,
-										     solver=SOLVER)
+										     solver=SOLVER,
+											 multi_class=MULTI_CLASS)
 	# 2. train
 	logistic_regression.fit(X_train, Y_train)
 
@@ -86,8 +89,12 @@ if __name__ == "__main__":
 	scatter_name_dict = {0: "Setosa",
 					     1: "Versicolor",
 						 2: "Virginica"}
-	plotting = Plotting(classifier, classifier_name,
-					    x_label, y_label, scatter_name_dict)
+	plotting = Plotting(classifier,
+					    classifier_name,
+					    x_label,
+						y_label,
+						scatter_name_dict,
+						multi_class=MULTI_CLASS)
 	X_combined = np.vstack((X_train, X_test))
 	Y_combined = np.hstack((Y_train, Y_test))
 	save_path = "res/sklearn_perceptron_classification/"+\
