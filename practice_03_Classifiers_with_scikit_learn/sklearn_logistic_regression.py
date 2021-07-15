@@ -111,3 +111,4 @@ if __name__ == "__main__":
 	print('\n', X_test[0, :], sep='')
 	print('\n', X_test[0, :].reshape(1, -1), sep='')
 	#print('\n', logistic_regression.predict(X_test[:3, :]), sep='')
+
