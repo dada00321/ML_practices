@@ -10,6 +10,10 @@ from module.plotting import Plotting
 # for training data
 # =============================================================================
 from sklearn.linear_model import LogisticRegression
+# =============================================================================
+# for plotting & observing regularization parameter
+# =============================================================================
+import matplotlib.pyplot as plt
 
 def show_sample_size_of_each_class(Y, title):
 	'''
@@ -39,6 +43,38 @@ def load_data(type_):
 		      " `load_data()` is undefined.")
 		return None
 
+def plot_regularization_parameter(X_train, Y_train):
+	weights = list()
+	parameters = list()
+
+	C = 10.0
+	RAMDOM_SEED = 1
+	SOLVER = "lbfgs"
+	MULTI_CLASS = "ovr"
+	for c in np.arange(-5, 5):
+		# construct model
+		logistic_regression = LogisticRegression(C=10.0**c,
+											     random_state=RAMDOM_SEED,
+											     solver=SOLVER,
+												 multi_class=MULTI_CLASS)
+		logistic_regression.fit(X_train, Y_train)
+		weights.append(logistic_regression.coef_[1])
+		parameters.append(10.0**c)
+	weights = np.array(weights)
+	labels = ["petal length", "petal width"]
+	for _, lbl in enumerate(labels):
+		linestyle_ = None
+		if _ == 1:
+			linestyle_ = "--"
+		plt.plot(parameters, weights[:, _],
+				 linestyle=linestyle_,
+				 label=lbl)
+	plt.ylabel("weight coefficient")
+	plt.xlabel('C')
+	plt.legend(loc="upper left")
+	plt.xscale("log")
+	plt.show()
+
 def normalize_input_features(X_train, X_test):
 	'''
 	rtn_val: normalized X_train and X_test (via same statistics)
@@ -58,7 +94,7 @@ if __name__ == "__main__":
 	show_sample_size_of_each_class(Y_test, "test data")
 
 	X_train, X_test = normalize_input_features(X_train, X_test)
-
+	'''
 	#LR = 0.1
 	RAMDOM_SEED = 1
 	C = 100.0
@@ -111,4 +147,7 @@ if __name__ == "__main__":
 	print('\n', X_test[0, :], sep='')
 	print('\n', X_test[0, :].reshape(1, -1), sep='')
 	#print('\n', logistic_regression.predict(X_test[:3, :]), sep='')
+	'''
+
+	plot_regularization_parameter(X_train, Y_train)
 
