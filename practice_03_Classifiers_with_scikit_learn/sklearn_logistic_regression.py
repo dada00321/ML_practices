@@ -94,7 +94,7 @@ if __name__ == "__main__":
 	show_sample_size_of_each_class(Y_test, "test data")
 
 	X_train, X_test = normalize_input_features(X_train, X_test)
-	'''
+
 	#LR = 0.1
 	RAMDOM_SEED = 1
 	C = 100.0
@@ -147,7 +147,6 @@ if __name__ == "__main__":
 	print('\n', X_test[0, :], sep='')
 	print('\n', X_test[0, :].reshape(1, -1), sep='')
 	#print('\n', logistic_regression.predict(X_test[:3, :]), sep='')
-	'''
 
 	plot_regularization_parameter(X_train, Y_train)
 
