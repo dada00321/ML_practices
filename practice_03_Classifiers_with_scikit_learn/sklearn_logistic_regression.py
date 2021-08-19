@@ -99,8 +99,8 @@ if __name__ == "__main__":
 	RAMDOM_SEED = 1
 	C = 100.0
 	SOLVER = "lbfgs"
-	MULTI_CLASS  = "ovr"
-	#MULTI_CLASS  = "multinomial"
+	#MULTI_CLASS  = "ovr"
+	MULTI_CLASS  = "multinomial"
 	# 1. construct model
 	logistic_regression = LogisticRegression(C = C, random_state=RAMDOM_SEED,
 										     solver=SOLVER,
@@ -133,8 +133,8 @@ if __name__ == "__main__":
 						multi_class=MULTI_CLASS)
 	X_combined = np.vstack((X_train, X_test))
 	Y_combined = np.hstack((Y_train, Y_test))
-	save_path = "res/sklearn_perceptron_classification/"+\
-				f"sklearn_perceptron_classification___C={C}_"+\
+	save_path = "res/sklearn_logistic_regression/"+\
+				f"sklearn_logistic_regression___C={C}_"+\
 				f"__multi_class={MULTI_CLASS}.png"
 	test_idx = range(int(sample_size*(1-test_dataset_ratio)), sample_size)
 	plotting.plot_classification(X_combined, Y_combined,
