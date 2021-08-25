@@ -75,8 +75,13 @@ class Plotting:
 		else:
 			print("[WARNING] `__save_fig_to_path()`: The parameter `save_path` is invalid.")
 
-	def __save_polt_and_show(self, plt, save_path): # save_path: if need to save figure
+	def save_polt_and_show(self, plt, save_path, fig_name=None): # save_path: if need to save figure
 		plt.tight_layout()
+		if fig_name is not None:
+			fig_name = f"of {fig_name}"
+		else:
+			fig_name = ""
+		print(f"[INFO] Saving figure {fig_name}...")
 		self.__save_fig_to_path(plt, save_path) # Save the figure to `save_path` if given
 		plt.show()
 
@@ -123,4 +128,6 @@ class Plotting:
 		plt.legend(loc="upper left")
 
 		''' 4. Show the classification map '''
-		self.__save_polt_and_show(plt, save_path)
+		self.save_polt_and_show(plt, save_path)
+		
+		

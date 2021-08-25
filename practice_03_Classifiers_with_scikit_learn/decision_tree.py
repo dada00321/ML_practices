@@ -1,38 +1,112 @@
 import numpy as np
 
+# =============================================================================
+# for Scikit-learn Decision Tree
+# =============================================================================
+from sklearn import datasets
+from sklearn import tree as sklearn_tree_model
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
+
+# =============================================================================
+# for Plotting
+# =============================================================================
+from module.plotting import Plotting
+import matplotlib.pyplot as plt
+from sklearn.tree import export_graphviz
+from pydotplus import graph_from_dot_data
+
 class Decision_Tree_Generator():
-	def load_data(self):
-		data = [[2,2,1,0,"yes"],
-		        [2,2,1,1,"no"],
-				[1,2,1,0,"yes"],
-				[0,0,0,0,"yes"],
-				[0,0,0,1,"no"],
-				[1,0,0,1,"yes"],
-				[2,1,1,0,"no"],
-				[2,0,0,0,"yes"],
-				[0,1,0,0,"yes"],
-				[2,1,0,1,"yes"],
-				[1,2,0,0,"no"],
-				[0,1,1,1,"no"]]
-		
-		'''
-		data = [[2,2,1,0,"yes"],
-		        [2,2,1,1,"yes"],
-				[1,2,1,0,"yes"],
-				[0,0,0,0,"yes"]]
-		
-		data = [[2,2,1,0,"no"],
-		        [2,2,1,1,"no"],
-				[1,2,1,0,"no"],
-				[0,0,0,0,"no"]]
-		'''
-		
-		#data = [["no"],["yes"],["yes"],["no"],["yes"]]
-		#data = [["no"],["yes"],["yes"],["no"],["no"]]
-		
-		features = ["天氣","溫度","濕度","風速"]
-		return data, features
+	def load_data(self, dataset):
+		if dataset in ("iris", "activity"):
+			if dataset == "iris":
+				iris_data = datasets.load_iris()
+				X = iris_data.data[:, [2, 3]]
+				Y = iris_data.target
+				return X, Y
+			else:
+				data = [[2,2,1,0,"yes"],
+				        [2,2,1,1,"no"],
+						[1,2,1,0,"yes"],
+						[0,0,0,0,"yes"],
+						[0,0,0,1,"no"],
+						[1,0,0,1,"yes"],
+						[2,1,1,0,"no"],
+						[2,0,0,0,"yes"],
+						[0,1,0,0,"yes"],
+						[2,1,0,1,"yes"],
+						[1,2,0,0,"no"],
+						[0,1,1,1,"no"]]
+				'''
+				data = [[2,2,1,0,"yes"],
+				        [2,2,1,1,"yes"],
+						[1,2,1,0,"yes"],
+						[0,0,0,0,"yes"]]
+				
+				data = [[2,2,1,0,"no"],
+				        [2,2,1,1,"no"],
+						[1,2,1,0,"no"],
+						[0,0,0,0,"no"]]
+				#data = [["no"],["yes"],["yes"],["no"],["yes"]]
+				#data = [["no"],["yes"],["yes"],["no"],["no"]]
+				'''
+				features = ["天氣","溫度","濕度","風速"]
+				return data, features
+		else:
+			print("[WARNING] Unknown dataset.")
+			return None
 	
+	"""
+	Handmade decision tree
+	---
+	main functions: 
+		(1) create_tree
+		    input: `data` <list> (list of <list>):
+				     => "Labels" placed on last column, 
+			            "realized feature values" placed on other columns
+			       `features` <list> (list of <str>): 
+					 => Feature names of "realized feature values"
+			
+			process: Recursively call itself to split current data by the feature
+			         with the greatest Info. Gain in each recursion
+					 untill (1) Labels of current data are same, or 
+					        (2) All features to split data were be used
+			
+			output: `decision tree` <dict>
+			          => key: can be feature name or realized feature value
+					     value: can be temporary dict (<dict>) or class-label (<str>)
+					  => example:
+						  {'濕度': {0: {'溫度': {0: 'yes', 1: 'no'}}, 1: 'no'}}
+		
+		(2) list_combinations
+		    input: `decision tree` <dict>
+			       `delimiter` <str>: 
+			         => [optional] default is " => "
+				   `prefix` <str>, `combinations` <list>: 
+				     => [don't care] used by recursion (internally)
+			
+			process: Recursively form up list of "decision paths".
+			
+			output: combinations <list> (list of "decision paths")
+				     => example:
+						  ['[濕度=0] => [溫度=0] => [yes]', 
+		                   '[濕度=0] => [溫度=1] => [no]',
+		                   '[濕度=1] => [no]']
+		(3) show_decision_tree
+		    input: `combinations` <list>
+			process: Print out `combinations` sequentially.
+			output: X
+		
+		(4) predict
+		    input:  `options` <list> (list of <str>)
+					 => "realized feature values"
+					`features` <list> (list of <str>)
+					 => Feature names of "realized feature values"
+					`combinations` <list> (list of "decision paths")
+			process: Doing simple string matching to find out the suitable combination
+			         for given "realized feature values".
+			output: class-label (depends on the result of decision tree)
+	"""
 	def __get_sorted_occurences(self, labels):
 		occurences = dict()
 		for label in labels:
@@ -162,7 +236,7 @@ class Decision_Tree_Generator():
 		#print(features)
 		return decision_tree
 	
-	def list_combinations(self, tree, prefix=None, combinations=[], delimiter=" => "):
+	def list_combinations(self, tree, delimiter=" => ", prefix=None, combinations=[]):
 		for k, v in tree.items():
 			if type(k).__name__ == "str":
 				tree = v
@@ -177,7 +251,7 @@ class Decision_Tree_Generator():
 						#print(f"{msg}[{tmp}]\n", end='') # show a combination
 						combinations.append(f"{msg}[{tmp}]")
 					else: # dict
-						self.list_combinations(tmp, msg, combinations)
+						self.list_combinations(tmp, delimiter, msg, combinations)
 		return combinations
 	
 	def show_decision_tree(self, combinations):
@@ -205,20 +279,126 @@ class Decision_Tree_Generator():
 			print(f"[INFO] Satisfied rule:\n{matched_idx+1:2d}. {rtn_list[0]}", sep='', end='\n'*2)
 			result = rtn_list[0].split(delimiter)[-1][1:-1]
 			print(f"[INFO] Result({options}):", result, sep=' ')
+			return result
 		else:
 			print("[INFO] Check whether the data is incomplete.")
+			return None
+	"""
+	Scikit-learn decision tree
+	"""
+	def __get_classes(self, dataset, type_):
+		if dataset == "iris":
+			if type_ in ("dict", "list"):
+				if type_ == "dict":
+					return  {0: "Setosa", 1: "Versicolor", 2: "Virginica"}
+				elif type_ == "list":
+					return ["Setosa", "Versicolor", "Virginica"]
+			else:
+				print("[WARNING] Cannot execute func: `get_classes`()"+\
+			          " because input parameter: `type_` is invalid.")
+				return None
+		else:
+			print("[WARNING] Unknown dataset.")
+			return None
+		
+	def __get_label_names(self, dataset, remark="with_unit"):
+		if dataset == "iris":
+			if remark == "with_unit":
+				return ["petal length (cm)", "petal width (cm)"]
+			elif remark == "without_unit":
+				return ["petal length", "petal width"]
+			else:
+				print("[WARNING] Cannot execute func: `__get_label_names()`"+\
+		              " because the input parameter of `remark` is invalid.")
+				return None
+		else:
+			print("[WARNING] Unknown dataset.")
+			return None
+		
+	def create_tree_scikit(self, X_train, X_test, Y_train, Y_test, sample_size, test_dataset_ratio):
+		CRITERION = "gini"
+		MAX_DEPTH = 4
+		RANDOM_STATE = 1
+		tree_builder = DecisionTreeClassifier(criterion=CRITERION,
+								              max_depth=MAX_DEPTH,
+									          random_state=RANDOM_STATE)
+		decision_tree = tree_builder.fit(X_train, Y_train)
+		
+		X_combined = np.vstack((X_train, X_test))
+		Y_combined = np.hstack((Y_train, Y_test))
+
+		# plot classification result
+		classifier = decision_tree
+		classifier_name = "Decision Tree"
+		label_names = self.__get_label_names("iris", remark="with_unit")
+		x_label = label_names[0]
+		y_label = label_names[1]
+		scatter_name_dict = self.__get_classes("iris", "dict")
+		plotting = Plotting(classifier,
+						    classifier_name,
+						    x_label,
+							y_label,
+							scatter_name_dict)
+		X_combined = np.vstack((X_train, X_test))
+		Y_combined = np.hstack((Y_train, Y_test))
+		save_path = "res/decision_tree/sklearn_decision_tree/"+\
+			        "iris_decision_tree__decision_boundaries.png"
+		test_idx = range(int(sample_size*(1-test_dataset_ratio)), sample_size)
+		plotting.plot_classification(X_combined, Y_combined,
+								     save_path, test_idx)
+		return decision_tree
 	
+	def show_decision_tree_scikit(self, decision_tree, plot_type):
+		if plot_type in ("Scikit-learn", "GraphViz"):
+			print("[INFO] Generating decision tree plot ...")
+			if plot_type == "Scikit-learn":
+				# Obtain plot of decision tree by Scikit-learn
+				sklearn_tree_model.plot_tree(decision_tree)
+				save_path = "res/decision_tree/sklearn_decision_tree/"+\
+					        "iris_decision_tree__readable_decision_tree_(scikit).png"
+				plt.savefig(save_path)
+			else:
+				# Obtain plot of decision tree by GraphViz
+				save_path = "res/decision_tree/sklearn_decision_tree/"+\
+					        "iris_decision_tree__readable_decision_tree_(pydotplus).png"
+				classes = self.__get_classes("iris", "list")
+				label_names = self.__get_label_names("iris", remark="without_unit")
+				dot_data = export_graphviz(decision_tree,
+								           filled=True,
+										   rounded=True,
+										   class_names=classes,
+										   feature_names=label_names,
+										   out_file=None)
+				graph = graph_from_dot_data(dot_data)
+				graph.write_png(save_path)
+		else:
+			print("Cannot execute func: `show_decision_tree_scikit()`"+\
+			      " because input parameter: `plot_type` is unknown.")
+
 if __name__ == "__main__":
 	decision_tree_generator = Decision_Tree_Generator()
 	
-	data, features = decision_tree_generator.load_data()
+	''' 1. Create & plot the "activity" decision tree '''
+	print("[INFO] Decision Tree 1: \"activity\" decision tree ...\n")
+	data, features = decision_tree_generator.load_data("activity")
 	print("[INFO] Create decision tree ...\n")
 	decision_tree = decision_tree_generator.create_tree(data, features)
-	
 	print("[INFO] Enumerate all possible combinations of decision tree ...\n")
+	# ---
 	combinations = decision_tree_generator.list_combinations(decision_tree)
-	decision_tree_generator.show_decision_tree(combinations)
-	
+	#decision_tree_generator.show_decision_tree(combinations)
+	# ---
 	options = [1,1,1,0]
 	decision_tree_generator.predict(features, options, combinations)
 	
+	''' 2. Create & plot the "Iris" decision tree '''
+	print("[INFO] Decision Tree 2: \"Iris\" decision tree ...\n")
+	X, Y = decision_tree_generator.load_data("iris")
+	sample_size = np.bincount(Y).sum()
+	test_dataset_ratio = 0.3
+	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_dataset_ratio, random_state=1, stratify=Y)
+	decision_tree = decision_tree_generator.create_tree_scikit(X_train, X_test, Y_train, Y_test, sample_size, test_dataset_ratio)
+	# ---
+	#plot_type = "Scikit-learn"
+	plot_type = "GraphViz"
+	decision_tree_generator.show_decision_tree_scikit(decision_tree, plot_type)
