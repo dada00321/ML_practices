@@ -163,7 +163,7 @@ class Decision_Tree_Generator():
 		''' Step 1. Define formula of impurity '''
 		entropy = lambda probs: -sum([prob * np.log2(prob) for prob in probs])
 		
-		''' Step 2. Find the "best feature" ("feature to split") within current data '''
+		''' Step 2. Obtain the "best feature" ("feature to split") within current data '''
 		best_feature_idx = -1   # initial index of best feature
 		greatest_info_gain = 0.0   # initial greatest info. gain
 		
@@ -215,13 +215,13 @@ class Decision_Tree_Generator():
 				best_feature_idx = i
 				greatest_info_gain = info_gain
 		
-		''' Step 3. Obtain the best feature '''
+		''' Step 2d. Obtain the best feature '''
 		# *** [TEST] ***
 		best_feature = features[best_feature_idx]
 		#print("[TEST] Feature to split:")
 		#print(f"{best_feature} (idx: {best_feature_idx})\n")
 		
-		''' Step 4. Form up the decision tree '''
+		''' Step 3. Form up the decision tree '''
 		### Need to delete "used feature name" & "col. in data"
 		features_copy = features[:]
 		del features_copy[best_feature_idx]
@@ -315,18 +315,14 @@ class Decision_Tree_Generator():
 			print("[WARNING] Unknown dataset.")
 			return None
 		
-	def create_tree_scikit(self, X_train, X_test, Y_train, Y_test, sample_size, test_dataset_ratio):
+	def create_tree_scikit(self, X_train, X_test, Y_train, Y_test, sample_size, test_dataset_ratio, MAX_DEPTH):
 		CRITERION = "gini"
-		MAX_DEPTH = 4
 		RANDOM_STATE = 1
 		tree_builder = DecisionTreeClassifier(criterion=CRITERION,
 								              max_depth=MAX_DEPTH,
 									          random_state=RANDOM_STATE)
 		decision_tree = tree_builder.fit(X_train, Y_train)
 		
-		X_combined = np.vstack((X_train, X_test))
-		Y_combined = np.hstack((Y_train, Y_test))
-
 		# plot classification result
 		classifier = decision_tree
 		classifier_name = "Decision Tree"
@@ -342,25 +338,25 @@ class Decision_Tree_Generator():
 		X_combined = np.vstack((X_train, X_test))
 		Y_combined = np.hstack((Y_train, Y_test))
 		save_path = "res/decision_tree/sklearn_decision_tree/"+\
-			        "iris_decision_tree__decision_boundaries.png"
+			        f"iris_decision_tree__decision_boundaries__[MAX_DEPTH={MAX_DEPTH}].png"
 		test_idx = range(int(sample_size*(1-test_dataset_ratio)), sample_size)
 		plotting.plot_classification(X_combined, Y_combined,
 								     save_path, test_idx)
 		return decision_tree
 	
-	def show_decision_tree_scikit(self, decision_tree, plot_type):
+	def show_decision_tree_scikit(self, decision_tree, plot_type, MAX_DEPTH):
 		if plot_type in ("Scikit-learn", "GraphViz"):
 			print("[INFO] Generating decision tree plot ...")
 			if plot_type == "Scikit-learn":
 				# Obtain plot of decision tree by Scikit-learn
 				sklearn_tree_model.plot_tree(decision_tree)
 				save_path = "res/decision_tree/sklearn_decision_tree/"+\
-					        "iris_decision_tree__readable_decision_tree_(scikit).png"
+					        f"iris_decision_tree__readable_decision_tree_(scikit)__MAX_DEPTH={MAX_DEPTH}.png"
 				plt.savefig(save_path)
 			else:
 				# Obtain plot of decision tree by GraphViz
 				save_path = "res/decision_tree/sklearn_decision_tree/"+\
-					        "iris_decision_tree__readable_decision_tree_(pydotplus).png"
+					        f"iris_decision_tree__readable_decision_tree_(pydotplus)__MAX_DEPTH={MAX_DEPTH}.png"
 				classes = self.__get_classes("iris", "list")
 				label_names = self.__get_label_names("iris", remark="without_unit")
 				dot_data = export_graphviz(decision_tree,
@@ -396,9 +392,11 @@ if __name__ == "__main__":
 	X, Y = decision_tree_generator.load_data("iris")
 	sample_size = np.bincount(Y).sum()
 	test_dataset_ratio = 0.3
+	MAX_DEPTH = 8
 	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_dataset_ratio, random_state=1, stratify=Y)
-	decision_tree = decision_tree_generator.create_tree_scikit(X_train, X_test, Y_train, Y_test, sample_size, test_dataset_ratio)
+	decision_tree = decision_tree_generator.create_tree_scikit(X_train, X_test, Y_train, Y_test, sample_size, test_dataset_ratio, MAX_DEPTH)
 	# ---
 	#plot_type = "Scikit-learn"
 	plot_type = "GraphViz"
-	decision_tree_generator.show_decision_tree_scikit(decision_tree, plot_type)
+	decision_tree_generator.show_decision_tree_scikit(decision_tree, plot_type, MAX_DEPTH)
+	print(X)
