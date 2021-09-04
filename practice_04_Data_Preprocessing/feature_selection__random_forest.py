@@ -66,7 +66,7 @@ if __name__ == "__main__":
 	# 4. Plot result
 	plot_feature_importances(X_train, importances, feature_names, indices)
 	
-	# 5. 
+	# 5. Feature selection
 	sfm = SelectFromModel(forest, threshold=0.1, prefit=True)
 	X_selected = sfm.transform(X_train)
 	print(f"Number of features: {X_selected.shape[1]}")
