@@ -97,6 +97,7 @@ class SBS():
 		plt.xlabel("Number of features")
 		plt.grid()
 		plt.tight_layout()
+		plt.savefig("./res/feature_selection__SBS/feature_accuracy__line_chart.png")
 		plt.show()
 		
 	def get_reduced_feature_indices(self, df, statisfied_feature_num):
