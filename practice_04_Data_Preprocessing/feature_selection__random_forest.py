@@ -46,7 +46,6 @@ if __name__ == "__main__":
 	label_col_name = "Class label"
 	test_dataset_ratio = 0.3
 	random_state = 1
-	regularize_type = "standardize"
 	
 	# 1. Load data
 	preprocess_util = Preprocess_Util()
@@ -58,7 +57,6 @@ if __name__ == "__main__":
 	X, Y = preprocess_util.label_features_split(df, label_col_name)
 	X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_dataset_ratio, random_state=random_state)
 	#X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=test_dataset_ratio, random_state=random_state, stratify=Y)
-	X_train, X_test = preprocess_util.regularization(X_train, X_test, regularize_type)
 	list_feature_importances(X_train, Y_train)
 	
 	# 3. List feature from most-importance to last-importance to the labels (Y)
