@@ -195,8 +195,8 @@ class Preprocess_Util():
 	  Spliting label & features
 	'''
 	def label_features_split(self, data, label_col_name):
-		X = df.loc[:, df.columns != label_col_name].values
-		Y = df.loc[:, label_col_name].values
+		X = data.loc[:, data.columns != label_col_name].values
+		Y = data.loc[:, label_col_name].values
 		return X, Y
 	
 	'''
